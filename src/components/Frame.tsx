@@ -15,6 +15,7 @@ import { useSession } from "next-auth/react";
 import { createStore } from "mipd";
 import { Label } from "~/components/ui/label";
 import { PROJECT_TITLE } from "~/lib/constants";
+import { formatDistance } from "date-fns";
 
 export default function Frame(
   { title }: { title?: string } = { title: PROJECT_TITLE }
@@ -107,6 +108,19 @@ export default function Frame(
     return <div>Loading...</div>;
   }
 
+  // Calculate next Friday at 5pm UTC
+  const now = new Date();
+  const nextFriday = new Date(now);
+  nextFriday.setUTCDate(now.getUTCDate() + ((5 + 7 - now.getUTCDay()) % 7));
+  nextFriday.setUTCHours(17, 0, 0, 0); // 5pm UTC
+  
+  // If it's already past Friday 5pm, show next week
+  if (nextFriday < now) {
+    nextFriday.setUTCDate(nextFriday.getUTCDate() + 7);
+  }
+
+  const timeLeft = formatDistance(nextFriday, now, { includeSeconds: true });
+
   return (
     <div
       style={{
@@ -118,6 +132,15 @@ export default function Frame(
     >
       <div className="w-[300px] mx-auto py-2 px-2">
         <h1 className="text-2xl font-bold text-center mb-4">{title}</h1>
+        <div className="text-center text-lg mb-4">
+          Countdown to Climax Event:
+        </div>
+        <div className="text-center text-3xl font-bold">
+          {timeLeft}
+        </div>
+        <div className="text-center text-sm mt-2 text-neutral-500">
+          Next Friday at 5pm UTC
+        </div>
       </div>
     </div>
   );
